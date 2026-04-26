@@ -23,13 +23,13 @@ export default async function DocPreviewPage({ params }: { params: Promise<Param
           <div>
             <p className="text-sm uppercase tracking-[0.3em] text-cyan-200">Agent doc preview</p>
             <h1 className="mt-3 text-4xl font-semibold tracking-tight">{result.doc.title}</h1>
-            <p className="mt-3 break-all font-mono text-sm text-slate-300">{absoluteSiteUrl(rawUrl)}</p>
+            <p className="mt-3 break-all font-mono text-sm text-white">{absoluteSiteUrl(rawUrl)}</p>
           </div>
           <DocActions rawUrl={rawUrl} previewUrl={previewUrl} />
         </div>
         <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
           <article className="glass rounded-[2rem] p-4 sm:p-6">
-            <pre className="prose-md overflow-x-auto rounded-3xl bg-slate-950/70 p-4 font-mono text-sm sm:p-6">{result.doc.content}</pre>
+            <pre className="prose-md overflow-x-auto rounded-3xl bg-slate-950/85 p-4 font-mono text-sm sm:p-6">{result.doc.content}</pre>
           </article>
           <aside className="glass h-fit rounded-[2rem] p-5">
             <h2 className="text-lg font-semibold">Registry metadata</h2>
@@ -41,12 +41,12 @@ export default async function DocPreviewPage({ params }: { params: Promise<Param
               <Meta label="Updated" value={new Date(result.doc.updatedAt).toLocaleString()} />
             </dl>
             <div className="mt-5 flex flex-wrap gap-2">
-              {result.app.tags.map((tag) => <span key={tag} className="rounded-full bg-white/10 px-3 py-1 text-xs text-slate-300">#{tag}</span>)}
+              {result.app.tags.map((tag) => <span key={tag} className="rounded-full bg-white/10 px-3 py-1 text-xs text-white">#{tag}</span>)}
             </div>
             <div className="mt-5 space-y-2 text-sm">
-              {result.app.repoUrl && <Link className="block text-cyan-100 hover:underline" href={result.app.repoUrl}>Repository</Link>}
-              {result.app.homepageUrl && <Link className="block text-cyan-100 hover:underline" href={result.app.homepageUrl}>Homepage</Link>}
-              <Link className="block text-cyan-100 hover:underline" href="/api/docs">Registry JSON API</Link>
+              {result.app.repoUrl && <Link className="block font-medium text-cyan-100 hover:text-white hover:underline" href={result.app.repoUrl}>Repository</Link>}
+              {result.app.homepageUrl && <Link className="block font-medium text-cyan-100 hover:text-white hover:underline" href={result.app.homepageUrl}>Homepage</Link>}
+              <Link className="block font-medium text-cyan-100 hover:text-white hover:underline" href="/api/docs">Registry JSON API</Link>
             </div>
             <div className="mt-5 rounded-2xl border border-amber-300/25 bg-amber-300/10 p-4 text-sm leading-6 text-amber-100">
               Trust scanning is not enabled yet. Inspect instructions before letting an agent execute shell commands or public writes.
@@ -61,8 +61,8 @@ export default async function DocPreviewPage({ params }: { params: Promise<Param
 function Meta({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <dt className="text-xs uppercase tracking-[0.2em] text-slate-500">{label}</dt>
-      <dd className="mt-1 break-all text-slate-200">{value}</dd>
+      <dt className="text-xs uppercase tracking-[0.2em] text-slate-300">{label}</dt>
+      <dd className="mt-1 break-all text-white">{value}</dd>
     </div>
   );
 }
