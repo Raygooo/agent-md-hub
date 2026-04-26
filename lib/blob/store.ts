@@ -3,7 +3,7 @@ import { seedData } from '../seed';
 import { slugify } from '../slug';
 import type { AgentApp, AgentDoc, AppWithDocs, StoreData } from '../types';
 
-const DATA_PATH = 'agent-md-hub/data.json';
+const DATA_PREFIX = 'agent-md-hub/data/';
 
 function requireBlobToken() {
   if (!process.env.BLOB_READ_WRITE_TOKEN) {
@@ -14,8 +14,8 @@ function requireBlobToken() {
 async function readBlobData(): Promise<StoreData> {
   requireBlobToken();
   try {
-    const { blobs } = await list({ prefix: DATA_PATH, limit: 1 });
-    const blob = blobs.find((item) => item.pathname === DATA_PATH);
+    const { blobs } = await list({ prefix: DATA_PREFIX, limit: 1000 });
+    const blob = blobs.sort((a, b) => b.uploadedAt.getTime() - a.uploadedAt.getTime())[0];
     if (blob) {
       const response = await fetch(blob.url, { cache: 'no-store' });
       if (response.ok) {
@@ -32,9 +32,10 @@ async function readBlobData(): Promise<StoreData> {
 
 async function writeBlobData(data: StoreData) {
   requireBlobToken();
-  await put(DATA_PATH, JSON.stringify(data, null, 2), {
+  const pathname = `${DATA_PREFIX}${Date.now()}-${crypto.randomUUID()}.json`;
+  await put(pathname, JSON.stringify(data, null, 2), {
     access: 'public',
-    allowOverwrite: true,
+    addRandomSuffix: false,
     contentType: 'application/json',
     cacheControlMaxAge: 60
   });
