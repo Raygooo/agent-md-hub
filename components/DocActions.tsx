@@ -31,12 +31,12 @@ export function DocActions({ rawUrl, previewUrl, compact }: Props) {
   }
 
   const buttonClass = compact
-    ? 'rounded-full border border-white/15 px-3 py-2 text-xs font-semibold text-white hover:bg-white/10'
-    : 'rounded-full border border-white/15 px-4 py-3 text-sm font-semibold text-white hover:bg-white/10';
+    ? 'rounded-full border border-white/25 bg-white/10 px-3 py-2 text-xs font-semibold text-white hover:bg-white/20'
+    : 'rounded-full border border-white/25 bg-white/10 px-4 py-3 text-sm font-semibold text-white hover:bg-white/20';
 
   return (
     <div className="flex flex-wrap items-center gap-2">
-      <Link href={rawUrl} className="rounded-full bg-white px-4 py-3 text-sm font-semibold text-slate-950 hover:bg-cyan-100">
+      <Link href={rawUrl} className="rounded-full bg-cyan-100 px-4 py-3 text-sm font-semibold text-slate-950 shadow-sm hover:bg-white">
         Raw .md
       </Link>
       <Link href={previewUrl} className={buttonClass}>

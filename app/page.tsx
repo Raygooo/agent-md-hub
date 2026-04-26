@@ -23,10 +23,10 @@ export default async function HomePage() {
           <h1 className="max-w-4xl text-4xl font-semibold leading-tight tracking-tight sm:text-5xl md:text-7xl">
             Clean .md URLs for AI agents.
           </h1>
-          <p className="mt-6 max-w-2xl text-base leading-7 text-slate-300 sm:text-lg sm:leading-8">
+          <p className="mt-6 max-w-2xl text-base leading-7 text-slate-200 sm:text-lg sm:leading-8">
             Publish SKILL.md files, install prompts, and runbooks as stable raw Markdown URLs with registry metadata, so agents can fetch and follow them directly.
           </p>
-          <div className="mt-6 rounded-3xl border border-cyan-300/20 bg-cyan-300/10 p-4">
+          <div className="mt-6 rounded-3xl border border-cyan-200/30 bg-cyan-950/40 p-4">
             <div className="text-xs uppercase tracking-[0.25em] text-cyan-100">Sample agent URL</div>
             <div className="mt-2 break-all font-mono text-sm text-white">{sampleUrl}</div>
             <div className="mt-4">
@@ -34,12 +34,12 @@ export default async function HomePage() {
             </div>
           </div>
           <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-            <Link href="/studio" className="rounded-full bg-white px-6 py-3 text-center font-semibold text-slate-950 hover:bg-cyan-100">
+            <Link href="/studio" className="rounded-full bg-cyan-100 px-6 py-3 text-center font-semibold text-slate-950 shadow-sm hover:bg-white">
               {demoReadonly ? 'Try studio demo' : 'Create a doc'}
             </Link>
-            <Link href="/registry" className="rounded-full border border-white/20 px-6 py-3 text-center font-semibold text-white hover:bg-white/10">Explore registry</Link>
+            <Link href="/registry" className="rounded-full border border-white/30 bg-white/10 px-6 py-3 text-center font-semibold text-white hover:bg-white/20">Explore registry</Link>
           </div>
-          <div className="mt-10 grid max-w-xl grid-cols-1 gap-4 text-sm text-slate-300 sm:grid-cols-3">
+          <div className="mt-10 grid max-w-xl grid-cols-1 gap-4 text-sm text-slate-200 sm:grid-cols-3">
             <Stat label="Public apps" value={apps.length} />
             <Stat label="Published docs" value={docsCount} />
             <Stat label="Storage" value={isPersistentStorageEnabled() ? 'DB' : 'Demo'} />
@@ -47,14 +47,14 @@ export default async function HomePage() {
         </div>
 
         <div className="glass rounded-[2rem] p-4 sm:p-5">
-          <div className="rounded-[1.5rem] border border-white/10 bg-slate-950/70 p-4 font-mono text-xs text-slate-200 sm:p-5 sm:text-sm">
+          <div className="rounded-[1.5rem] border border-white/15 bg-slate-950/85 p-4 font-mono text-xs text-slate-100 sm:p-5 sm:text-sm">
             <div className="mb-4 flex gap-2">
               <span className="h-3 w-3 rounded-full bg-red-400" />
               <span className="h-3 w-3 rounded-full bg-yellow-300" />
               <span className="h-3 w-3 rounded-full bg-green-400" />
             </div>
             <p className="break-all text-cyan-200">curl {sampleUrl}</p>
-            <pre className="mt-5 whitespace-pre-wrap text-slate-300">{`---\ntitle: Install Prompt\nagent: openclaw\n---\n\n# Install safely\n\n1. Inspect the repo.\n2. Prefer localhost-only.\n3. Report commands and rollback.\n`}</pre>
+            <pre className="mt-5 whitespace-pre-wrap text-slate-200">{`---\ntitle: Install Prompt\nagent: openclaw\n---\n\n# Install safely\n\n1. Inspect the repo.\n2. Prefer localhost-only.\n3. Report commands and rollback.\n`}</pre>
           </div>
         </div>
       </section>
@@ -72,9 +72,9 @@ export default async function HomePage() {
 
 function Stat({ label, value }: { label: string; value: string | number }) {
   return (
-    <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+    <div className="rounded-2xl border border-white/15 bg-slate-950/45 p-4">
       <div className="text-2xl font-semibold text-white">{value}</div>
-      <div className="mt-1 text-xs uppercase tracking-[0.2em] text-slate-400">{label}</div>
+      <div className="mt-1 text-xs uppercase tracking-[0.2em] text-slate-300">{label}</div>
     </div>
   );
 }
@@ -83,7 +83,7 @@ function Info({ title, text }: { title: string; text: string }) {
   return (
     <div>
       <h2 className="text-lg font-semibold text-white">{title}</h2>
-      <p className="mt-2 text-sm leading-6 text-slate-300">{text}</p>
+      <p className="mt-2 text-sm leading-6 text-slate-200">{text}</p>
     </div>
   );
 }
