@@ -3,6 +3,7 @@ import path from 'node:path';
 import {
   blobCreateApp,
   blobCreateDoc,
+  blobCreateAppWithDoc,
   blobGetApp,
   blobGetPublicDoc,
   blobListAllApps,
@@ -126,6 +127,31 @@ export async function createDoc(input: { appId: string; title: string; content: 
   data.docs.unshift(doc);
   await writeData(data);
   return doc;
+}
+
+export async function createAppWithDoc(input: {
+  ownerSlug?: string;
+  appName: string;
+  description?: string;
+  repoUrl?: string;
+  docTitle: string;
+  content: string;
+}) {
+  if (hasBlob && !hasDatabase) return blobCreateAppWithDoc(input);
+
+  const app = await createApp({
+    ownerSlug: input.ownerSlug,
+    name: input.appName,
+    description: input.description,
+    repoUrl: input.repoUrl
+  });
+  const doc = await createDoc({
+    appId: app.id,
+    title: input.docTitle,
+    content: input.content,
+    description: input.description
+  });
+  return { app, doc };
 }
 
 export function isDemoReadonly() {

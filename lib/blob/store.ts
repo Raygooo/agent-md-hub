@@ -15,7 +15,7 @@ async function readBlobData(): Promise<StoreData> {
   requireBlobToken();
   try {
     const { blobs } = await list({ prefix: DATA_PREFIX, limit: 1000 });
-    const blob = blobs.sort((a, b) => b.uploadedAt.getTime() - a.uploadedAt.getTime())[0];
+    const blob = blobs.sort((a, b) => b.pathname.localeCompare(a.pathname))[0];
     if (blob) {
       const response = await fetch(blob.url, { cache: 'no-store' });
       if (response.ok) {
@@ -74,10 +74,8 @@ export async function blobGetPublicDoc(ownerSlug: string, appSlug: string, docSl
   return doc ? { app, doc } : null;
 }
 
-export async function blobCreateApp(input: { ownerSlug?: string; name: string; description?: string; repoUrl?: string }) {
-  const data = await readBlobData();
-  const now = new Date().toISOString();
-  const app: AgentApp = {
+function buildApp(input: { ownerSlug?: string; name: string; description?: string; repoUrl?: string }, now: string): AgentApp {
+  return {
     id: `app_${crypto.randomUUID()}`,
     ownerSlug: input.ownerSlug ? slugify(input.ownerSlug) : 'demo',
     name: input.name,
@@ -89,15 +87,10 @@ export async function blobCreateApp(input: { ownerSlug?: string; name: string; d
     createdAt: now,
     updatedAt: now
   };
-  data.apps.unshift(app);
-  await writeBlobData(data);
-  return app;
 }
 
-export async function blobCreateDoc(input: { appId: string; title: string; content: string; description?: string }) {
-  const data = await readBlobData();
-  const now = new Date().toISOString();
-  const doc: AgentDoc = {
+function buildDoc(input: { appId: string; title: string; content: string; description?: string }, now: string): AgentDoc {
+  return {
     id: `doc_${crypto.randomUUID()}`,
     appId: input.appId,
     title: input.title,
@@ -108,7 +101,40 @@ export async function blobCreateDoc(input: { appId: string; title: string; conte
     createdAt: now,
     updatedAt: now
   };
+}
+
+export async function blobCreateApp(input: { ownerSlug?: string; name: string; description?: string; repoUrl?: string }) {
+  const data = await readBlobData();
+  const now = new Date().toISOString();
+  const app = buildApp(input, now);
+  data.apps.unshift(app);
+  await writeBlobData(data);
+  return app;
+}
+
+export async function blobCreateDoc(input: { appId: string; title: string; content: string; description?: string }) {
+  const data = await readBlobData();
+  const now = new Date().toISOString();
+  const doc = buildDoc(input, now);
   data.docs.unshift(doc);
   await writeBlobData(data);
   return doc;
+}
+
+export async function blobCreateAppWithDoc(input: {
+  ownerSlug?: string;
+  appName: string;
+  description?: string;
+  repoUrl?: string;
+  docTitle: string;
+  content: string;
+}) {
+  const data = await readBlobData();
+  const now = new Date().toISOString();
+  const app = buildApp({ ownerSlug: input.ownerSlug, name: input.appName, description: input.description, repoUrl: input.repoUrl }, now);
+  const doc = buildDoc({ appId: app.id, title: input.docTitle, content: input.content, description: input.description }, now);
+  data.apps.unshift(app);
+  data.docs.unshift(doc);
+  await writeBlobData(data);
+  return { app, doc };
 }

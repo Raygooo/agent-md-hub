@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation';
 import { isAdminAuthorized } from '@/lib/config';
-import { createApp, createDoc, isDemoReadonly } from '@/lib/store';
+import { createAppWithDoc, isDemoReadonly } from '@/lib/store';
 
 export async function POST(request: Request) {
   if (isDemoReadonly()) {
@@ -18,8 +18,7 @@ export async function POST(request: Request) {
   const docTitle = String(form.get('docTitle') || 'SKILL');
   const content = String(form.get('content') || '');
 
-  const app = await createApp({ ownerSlug, name: appName, description });
-  const doc = await createDoc({ appId: app.id, title: docTitle, content, description });
+  const { app, doc } = await createAppWithDoc({ ownerSlug, appName, description, docTitle, content });
 
   redirect(`/a/${app.ownerSlug}/${app.slug}/${doc.slug}`);
 }
