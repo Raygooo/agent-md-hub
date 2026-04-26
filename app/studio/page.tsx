@@ -1,5 +1,7 @@
 import Link from 'next/link';
 import { Shell } from '@/components/Shell';
+
+export const dynamic = 'force-dynamic';
 import { hasAdminToken } from '@/lib/config';
 import { isDemoReadonly, isPersistentStorageEnabled, listAllApps } from '@/lib/store';
 

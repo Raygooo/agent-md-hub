@@ -1,5 +1,7 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+
+export const dynamic = 'force-dynamic';
 import { Shell } from '@/components/Shell';
 import { DocActions } from '@/components/DocActions';
 import { absoluteSiteUrl } from '@/lib/config';

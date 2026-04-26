@@ -1,5 +1,7 @@
 import Link from 'next/link';
 import { Shell } from '@/components/Shell';
+
+export const dynamic = 'force-dynamic';
 import { DocActions } from '@/components/DocActions';
 import { absoluteSiteUrl } from '@/lib/config';
 import { listPublicApps } from '@/lib/store';
