@@ -1,11 +1,20 @@
 import { promises as fs } from 'node:fs';
 import path from 'node:path';
+import {
+  dbCreateApp,
+  dbCreateDoc,
+  dbGetApp,
+  dbGetPublicDoc,
+  dbListAllApps,
+  dbListPublicApps
+} from './db/store';
 import { seedData } from './seed';
 import { slugify } from './slug';
 import type { AgentApp, AgentDoc, AppWithDocs, StoreData } from './types';
 
 const dataFile = path.join(process.cwd(), '.data', 'demo.json');
 const isVercel = process.env.VERCEL === '1';
+const hasDatabase = Boolean(process.env.DATABASE_URL);
 
 async function readData(): Promise<StoreData> {
   if (isVercel) return seedData;
@@ -29,7 +38,12 @@ function withDocs(app: AgentApp, docs: AgentDoc[]): AppWithDocs {
   return { ...app, docs: docs.filter((doc) => doc.appId === app.id) };
 }
 
+function uniqueSlug(base: string) {
+  return `${base}-${crypto.randomUUID().slice(0, 6)}`;
+}
+
 export async function listPublicApps(): Promise<AppWithDocs[]> {
+  if (hasDatabase) return dbListPublicApps();
   const data = await readData();
   return data.apps
     .filter((app) => app.visibility === 'public')
@@ -37,17 +51,20 @@ export async function listPublicApps(): Promise<AppWithDocs[]> {
 }
 
 export async function listAllApps(): Promise<AppWithDocs[]> {
+  if (hasDatabase) return dbListAllApps();
   const data = await readData();
   return data.apps.map((app) => withDocs(app, data.docs));
 }
 
 export async function getApp(ownerSlug: string, appSlug: string): Promise<AppWithDocs | null> {
+  if (hasDatabase) return dbGetApp(ownerSlug, appSlug);
   const data = await readData();
   const app = data.apps.find((item) => item.ownerSlug === ownerSlug && item.slug === appSlug);
   return app ? withDocs(app, data.docs) : null;
 }
 
 export async function getPublicDoc(ownerSlug: string, appSlug: string, docSlug: string) {
+  if (hasDatabase) return dbGetPublicDoc(ownerSlug, appSlug, docSlug);
   const app = await getApp(ownerSlug, appSlug);
   if (!app || app.visibility !== 'public') return null;
   const doc = app.docs.find((item) => item.slug === docSlug && item.published);
@@ -55,9 +72,10 @@ export async function getPublicDoc(ownerSlug: string, appSlug: string, docSlug: 
 }
 
 export async function createApp(input: { ownerSlug?: string; name: string; description?: string; repoUrl?: string }) {
+  if (hasDatabase) return dbCreateApp(input);
   const data = await readData();
   const now = new Date().toISOString();
-  const slug = slugify(input.name);
+  const slug = uniqueSlug(slugify(input.name));
   const app: AgentApp = {
     id: `app_${crypto.randomUUID()}`,
     ownerSlug: input.ownerSlug ? slugify(input.ownerSlug) : 'demo',
@@ -76,13 +94,14 @@ export async function createApp(input: { ownerSlug?: string; name: string; descr
 }
 
 export async function createDoc(input: { appId: string; title: string; content: string; description?: string }) {
+  if (hasDatabase) return dbCreateDoc(input);
   const data = await readData();
   const now = new Date().toISOString();
   const doc: AgentDoc = {
     id: `doc_${crypto.randomUUID()}`,
     appId: input.appId,
     title: input.title,
-    slug: slugify(input.title),
+    slug: uniqueSlug(slugify(input.title)),
     description: input.description ?? '',
     content: input.content,
     published: true,
@@ -95,5 +114,9 @@ export async function createDoc(input: { appId: string; title: string; content: 
 }
 
 export function isDemoReadonly() {
-  return isVercel && !process.env.DATABASE_URL;
+  return isVercel && !hasDatabase;
+}
+
+export function isPersistentStorageEnabled() {
+  return hasDatabase;
 }

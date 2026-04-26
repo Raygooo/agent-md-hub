@@ -1,4 +1,5 @@
 import { redirect } from 'next/navigation';
+import { isAdminAuthorized } from '@/lib/config';
 import { createApp, createDoc, isDemoReadonly } from '@/lib/store';
 
 export async function POST(request: Request) {
@@ -7,6 +8,10 @@ export async function POST(request: Request) {
   }
 
   const form = await request.formData();
+  if (!isAdminAuthorized(form.get('adminToken'))) {
+    redirect('/studio?unauthorized=1');
+  }
+
   const ownerSlug = String(form.get('ownerSlug') || 'demo');
   const appName = String(form.get('appName') || 'Untitled App');
   const description = String(form.get('description') || '');
