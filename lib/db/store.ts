@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import { and, eq } from 'drizzle-orm';
 import { getDb } from './client';
 import { apps, docs } from './schema';
@@ -78,17 +79,21 @@ export async function dbGetPublicDoc(ownerSlug: string, appSlug: string, docSlug
   return doc ? { app, doc } : null;
 }
 
-export async function dbCreateApp(input: { ownerSlug?: string; name: string; description?: string; repoUrl?: string }) {
+export async function dbCreateApp(input: { ownerSlug?: string; name: string; description?: string; repoUrl?: string; namespaceId?: string | null; actorUserId?: string | null }) {
   const db = requireDb();
   const now = new Date();
   const baseSlug = slugify(input.name);
   const app: typeof apps.$inferInsert = {
     id: `app_${crypto.randomUUID()}`,
     ownerSlug: input.ownerSlug ? slugify(input.ownerSlug) : 'demo',
+    namespaceId: input.namespaceId,
+    createdByUserId: input.actorUserId,
+    updatedByUserId: input.actorUserId,
     name: input.name,
     slug: uniqueSlug(baseSlug),
     description: input.description ?? '',
     visibility: 'public',
+    status: 'active',
     repoUrl: input.repoUrl,
     tags: [],
     createdAt: now,
@@ -98,17 +103,24 @@ export async function dbCreateApp(input: { ownerSlug?: string; name: string; des
   return asApp(row);
 }
 
-export async function dbCreateDoc(input: { appId: string; title: string; content: string; description?: string }) {
+export async function dbCreateDoc(input: { appId: string; title: string; content: string; description?: string; actorUserId?: string | null }) {
   const db = requireDb();
   const now = new Date();
   const baseSlug = slugify(input.title);
   const doc: typeof docs.$inferInsert = {
     id: `doc_${crypto.randomUUID()}`,
     appId: input.appId,
+    createdByUserId: input.actorUserId,
+    updatedByUserId: input.actorUserId,
     title: input.title,
     slug: uniqueSlug(baseSlug),
     description: input.description ?? '',
     content: input.content,
+    contentHash: createHash('sha256').update(input.content).digest('hex'),
+    byteSize: Buffer.byteLength(input.content, 'utf8'),
+    version: 1,
+    visibility: 'public',
+    status: 'active',
     published: true,
     createdAt: now,
     updatedAt: now

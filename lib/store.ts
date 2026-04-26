@@ -85,7 +85,7 @@ export async function getPublicDoc(ownerSlug: string, appSlug: string, docSlug: 
   return doc ? { app, doc } : null;
 }
 
-export async function createApp(input: { ownerSlug?: string; name: string; description?: string; repoUrl?: string }) {
+export async function createApp(input: { ownerSlug?: string; name: string; description?: string; repoUrl?: string; namespaceId?: string | null; actorUserId?: string | null }) {
   if (hasDatabase) return dbCreateApp(input);
   if (hasBlob) return blobCreateApp(input);
   const data = await readData();
@@ -108,7 +108,7 @@ export async function createApp(input: { ownerSlug?: string; name: string; descr
   return app;
 }
 
-export async function createDoc(input: { appId: string; title: string; content: string; description?: string }) {
+export async function createDoc(input: { appId: string; title: string; content: string; description?: string; actorUserId?: string | null }) {
   if (hasDatabase) return dbCreateDoc(input);
   if (hasBlob) return blobCreateDoc(input);
   const data = await readData();
@@ -136,6 +136,8 @@ export async function createAppWithDoc(input: {
   repoUrl?: string;
   docTitle: string;
   content: string;
+  namespaceId?: string | null;
+  actorUserId?: string | null;
 }) {
   if (hasBlob && !hasDatabase) return blobCreateAppWithDoc(input);
 
@@ -143,13 +145,16 @@ export async function createAppWithDoc(input: {
     ownerSlug: input.ownerSlug,
     name: input.appName,
     description: input.description,
-    repoUrl: input.repoUrl
+    repoUrl: input.repoUrl,
+    namespaceId: input.namespaceId,
+    actorUserId: input.actorUserId
   });
   const doc = await createDoc({
     appId: app.id,
     title: input.docTitle,
     content: input.content,
-    description: input.description
+    description: input.description,
+    actorUserId: input.actorUserId
   });
   return { app, doc };
 }
