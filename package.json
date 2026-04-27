@@ -20,12 +20,14 @@
     "gray-matter": "latest",
     "next": "latest",
     "next-auth": "^4.24.14",
+    "pg": "^8.20.0",
     "react": "latest",
     "react-dom": "latest",
     "zod": "latest"
   },
   "devDependencies": {
     "@types/node": "latest",
+    "@types/pg": "^8.20.0",
     "@types/react": "latest",
     "@types/react-dom": "latest",
     "dotenv": "^17.4.2",
