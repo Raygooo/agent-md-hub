@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import type { ReactNode } from 'react';
+import { AuthNav } from '@/components/AuthNav';
 
 export function Shell({ children }: { children: ReactNode }) {
   return (
@@ -12,6 +13,7 @@ export function Shell({ children }: { children: ReactNode }) {
         <nav className="flex items-center gap-2 text-sm font-medium text-slate-100">
           <Link className="min-h-11 rounded-full px-4 py-3 hover:bg-white/15" href="/registry">Registry</Link>
           <Link className="min-h-11 rounded-full bg-cyan-100 px-4 py-3 font-semibold text-slate-950 shadow-sm hover:bg-white" href="/studio">Studio</Link>
+          <AuthNav />
         </nav>
       </header>
       {children}

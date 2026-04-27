@@ -12,12 +12,14 @@
     "db:seed": "tsx scripts/seed-db.ts"
   },
   "dependencies": {
+    "@auth/drizzle-adapter": "^1.11.2",
     "@neondatabase/serverless": "^1.1.0",
     "@tailwindcss/postcss": "latest",
     "@vercel/blob": "^2.3.3",
     "drizzle-orm": "^0.45.2",
     "gray-matter": "latest",
     "next": "latest",
+    "next-auth": "^4.24.14",
     "react": "latest",
     "react-dom": "latest",
     "zod": "latest"

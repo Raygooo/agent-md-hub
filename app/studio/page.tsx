@@ -2,7 +2,8 @@ import Link from 'next/link';
 import { Shell } from '@/components/Shell';
 
 export const dynamic = 'force-dynamic';
-import { hasAdminToken } from '@/lib/config';
+import { getAuthStatus, getWritableNamespaces } from '@/lib/auth/permissions';
+import { hasAdminToken, isAuthWritesEnabled } from '@/lib/config';
 import { isDemoReadonly, isPersistentStorageEnabled, listAllApps } from '@/lib/store';
 
 const starter = `---\ntitle: My Agent Instructions\nversion: 0.1.0\n---\n\n# What this is\n\nTell the agent what to do, what to avoid, and how to verify success.\n\n## Safety\n\n- Prefer localhost-first.\n- Ask before public writes.\n- Report exact commands and artifacts.\n`;
@@ -11,8 +12,14 @@ export default async function StudioPage({ searchParams }: { searchParams: Promi
   const params = await searchParams;
   const apps = await listAllApps();
   const readonly = isDemoReadonly();
-  const protectedWrites = hasAdminToken();
+  const authWritesEnabled = isAuthWritesEnabled();
+  const authStatus = await getAuthStatus();
+  const writableNamespaces = await getWritableNamespaces(authStatus.user);
+  const protectedWrites = !authWritesEnabled && hasAdminToken();
   const unauthorized = params.unauthorized;
+  const pendingAccess = params.access;
+  const quotaDenied = params.quota;
+  const publishDisabled = readonly || (authWritesEnabled && (!authStatus.isActive || writableNamespaces.length === 0));
   return (
     <Shell>
       <section className="mx-auto grid max-w-7xl gap-8 px-5 pb-20 pt-8 sm:px-6 md:pt-10 lg:grid-cols-[0.9fr_1.1fr]">
@@ -28,6 +35,10 @@ export default async function StudioPage({ searchParams }: { searchParams: Promi
             <Step n="3" text="Give agents the raw text/markdown URL." />
           </ol>
           {readonly && <div className="mt-5 rounded-2xl border border-amber-300/30 bg-amber-300/10 p-4 text-amber-100">Demo mode on Vercel: publishing is disabled until DATABASE_URL is configured.</div>}
+          {authWritesEnabled && !authStatus.isSignedIn && <div className="mt-5 rounded-2xl border border-cyan-300/30 bg-cyan-300/10 p-4 text-cyan-100">Sign in with GitHub to publish. Anonymous reads remain open.</div>}
+          {authWritesEnabled && authStatus.isSignedIn && !authStatus.isActive && <div className="mt-5 rounded-2xl border border-amber-300/30 bg-amber-300/10 p-4 text-amber-100">Your account is signed in but not active yet. Publishing is invite/allowlist-only while auth rolls out.</div>}
+          {pendingAccess && <div className="mt-5 rounded-2xl border border-amber-300/30 bg-amber-300/10 p-4 text-amber-100">Publishing is not available for this account yet.</div>}
+          {quotaDenied && <div className="mt-5 rounded-2xl border border-red-300/30 bg-red-300/10 p-4 text-red-100">Quota check failed: {String(quotaDenied)}.</div>}
           {unauthorized && <div className="mt-5 rounded-2xl border border-red-300/30 bg-red-300/10 p-4 text-red-100">Invalid admin token. Writes are protected in production.</div>}
           <div className="mt-8 space-y-3">
             {apps.map((app) => (
@@ -42,8 +53,15 @@ export default async function StudioPage({ searchParams }: { searchParams: Promi
           {protectedWrites && (
             <label className="mb-4 block text-sm text-slate-200">Admin token<input name="adminToken" type="password" placeholder="Required to publish" className="mt-2 w-full rounded-2xl border border-white/20 bg-slate-950/85 px-4 py-3 text-white shadow-inner shadow-black/20" /></label>
           )}
+          {authWritesEnabled ? (
+            <label className="mb-4 block text-sm text-slate-200">Namespace
+              <select name="namespaceId" disabled={writableNamespaces.length === 0} className="mt-2 w-full rounded-2xl border border-white/20 bg-slate-950/85 px-4 py-3 text-white shadow-inner shadow-black/20 disabled:text-slate-500">
+                {writableNamespaces.length === 0 ? <option>No writable namespaces</option> : writableNamespaces.map((namespace) => <option key={namespace.id} value={namespace.id}>{namespace.slug}</option>)}
+              </select>
+            </label>
+          ) : null}
           <div className="grid gap-4 md:grid-cols-2">
-            <label className="block text-sm text-slate-200">Owner slug<input name="ownerSlug" defaultValue="demo" className="mt-2 w-full rounded-2xl border border-white/20 bg-slate-950/85 px-4 py-3 text-white shadow-inner shadow-black/20" /></label>
+            {!authWritesEnabled && <label className="block text-sm text-slate-200">Owner slug<input name="ownerSlug" defaultValue="demo" className="mt-2 w-full rounded-2xl border border-white/20 bg-slate-950/85 px-4 py-3 text-white shadow-inner shadow-black/20" /></label>}
             <label className="block text-sm text-slate-200">App name<input name="appName" defaultValue="My Agent App" className="mt-2 w-full rounded-2xl border border-white/20 bg-slate-950/85 px-4 py-3 text-white shadow-inner shadow-black/20" /></label>
           </div>
           <label className="mt-4 block text-sm text-slate-200">Description<input name="description" defaultValue="Instructions designed for agents." className="mt-2 w-full rounded-2xl border border-white/20 bg-slate-950/85 px-4 py-3 text-white shadow-inner shadow-black/20" /></label>
@@ -51,7 +69,7 @@ export default async function StudioPage({ searchParams }: { searchParams: Promi
           <label className="mt-4 block text-sm text-slate-200">Markdown<textarea name="content" defaultValue={starter} rows={15} className="mt-2 w-full rounded-2xl border border-white/20 bg-slate-950/90 px-4 py-3 font-mono text-sm text-white shadow-inner shadow-black/20" /></label>
           <div className="mt-5 flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between">
             <Link href="/registry" className="text-center text-sm font-medium text-slate-100 hover:text-white hover:underline">View registry</Link>
-            <button disabled={readonly} className="rounded-full bg-cyan-100 px-6 py-3 font-semibold text-slate-950 shadow-sm hover:bg-white disabled:cursor-not-allowed disabled:bg-slate-300 disabled:text-slate-700">{readonly ? 'Publishing disabled' : 'Publish doc'}</button>
+            <button disabled={publishDisabled} className="rounded-full bg-cyan-100 px-6 py-3 font-semibold text-slate-950 shadow-sm hover:bg-white disabled:cursor-not-allowed disabled:bg-slate-300 disabled:text-slate-700">{publishDisabled ? 'Publishing disabled' : 'Publish doc'}</button>
           </div>
         </form>
       </section>

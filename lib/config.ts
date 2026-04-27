@@ -8,6 +8,10 @@ export function hasAdminToken() {
   return Boolean(process.env.ADMIN_TOKEN);
 }
 
+export function isAuthWritesEnabled() {
+  return process.env.AUTH_WRITES_ENABLED === 'true';
+}
+
 export function isAdminAuthorized(value: FormDataEntryValue | null) {
   const token = process.env.ADMIN_TOKEN;
   if (!token) return process.env.NODE_ENV !== 'production';
